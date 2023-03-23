@@ -1,0 +1,111 @@
+<div class="section">
+  <div class="title bg-slate-50">Nhập số coin</div>
+  <div class="input">
+    <input
+      type="number"
+      [(ngModel)]="n_coin"
+      (ngModelChange)="n_coinChange()"
+      [readOnly]="readonly"
+    />
+  </div>
+</div>
+<div class="list-item">
+  <div class="item">
+    <span> 0</span>
+    <nz-switch
+      [(ngModel)]="value0"
+      (ngModelChange)="setValue(0)"
+      [nzDisabled]="readonly"
+    ></nz-switch>
+  </div>
+  <div class="item">
+    <span> 1</span>
+    <nz-switch
+      [(ngModel)]="value1"
+      (ngModelChange)="setValue(1)"
+      [nzDisabled]="readonly"
+    ></nz-switch>
+  </div>
+</div>
+<div class="flex justify-center">
+  <button
+    class="btn-primary btn"
+    [ngClass]="{ disabled: readonly }"
+    (click)="start()"
+    *ngIf="!isStart$.value; else endBtn"
+  >
+    Lập lịch
+  </button>
+  <ng-template #endBtn>
+    <button
+      class="btn-primary btn"
+      (click)="end()"
+      [ngClass]="{ disabled: readonly }"
+    >
+      kết thúc
+    </button>
+  </ng-template>
+</div>
+<div class="list-coin">
+  <div class="coin" *ngFor="let coin of listCoin">
+    <span> {{ coin }}</span>
+  </div>
+</div>
+
+<div class="list-history" *ngIf="!readonly">
+  <div class="title">Lịch sử coin</div>
+  <div class="content">
+    <div class="list-coin-history" *ngFor="let list of historyList">
+      <span class="coin-history" *ngFor="let coin of list">{{ coin }}</span>
+    </div>
+  </div>
+</div>
+
+<ng-template #container>
+  <div class="section">
+    <div class="title bg-slate-50">Nhập số coin</div>
+    <div class="input">
+      <input
+        type="number"
+        [(ngModel)]="n_coin"
+        (ngModelChange)="n_coinChange()"
+      />
+    </div>
+  </div>
+  <div class="list-item">
+    <div class="item">
+      <span> 0</span>
+      <nz-switch [(ngModel)]="value0" (ngModelChange)="setValue(0)"></nz-switch>
+    </div>
+    <div class="item">
+      <span> 1</span>
+      <nz-switch [(ngModel)]="value1" (ngModelChange)="setValue(1)"></nz-switch>
+    </div>
+  </div>
+  <div class="flex justify-center">
+    <button
+      class="btn-primary btn"
+      (click)="start()"
+      *ngIf="!isStart$.value; else endBtn"
+    >
+      Lập lịch
+    </button>
+    <ng-template #endBtn>
+      <button class="btn-primary btn" (click)="end()">kết thúc</button>
+    </ng-template>
+  </div>
+  <div class="list-coin">
+    <div class="coin" *ngFor="let coin of listCoin">
+      <span> {{ coin }}</span>
+    </div>
+  </div>
+
+  <div class="list-history">
+    <div class="title">Lịch sử coin</div>
+    <div class="content">
+      <div class="list-coin-history" *ngFor="let list of historyList">
+        <span class="coin-history" *ngFor="let coin of list">{{ coin }}</span>
+      </div>
+    </div>
+  </div>
+</ng-template>
