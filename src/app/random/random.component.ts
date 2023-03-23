@@ -2,6 +2,7 @@ import {
   Component,
   Input,
   OnDestroy,
+  OnInit,
   TemplateRef,
   ViewChild,
 } from '@angular/core';
@@ -17,7 +18,7 @@ const VALUE1 = 'value1';
   templateUrl: './random.component.html',
   styleUrls: ['./random.component.less'],
 })
-export class RandomComponent implements OnDestroy {
+export class RandomComponent implements OnDestroy, OnInit {
   @ViewChild('container') container!: TemplateRef<unknown>;
   @Input() id?: number;
   @Input() from = 0;
@@ -37,7 +38,9 @@ export class RandomComponent implements OnDestroy {
   isStart$ = new BehaviorSubject<boolean>(false);
   loop$ = new BehaviorSubject<boolean>(false);
 
-  constructor() {
+  constructor() {}
+
+  ngOnInit(): void {
     this.listCoin = this.getFromLocalStorage(LIST_COIN, this.id ?? 0) ?? [];
     this.historyList =
       this.getFromLocalStorage(HISTORY_LIST, this.id ?? 0) ?? [];
@@ -54,7 +57,6 @@ export class RandomComponent implements OnDestroy {
 
     this.randomList(this.from, this.to, this.timeout).subscribe();
   }
-
   ngOnDestroy(): void {
     this.saveToLocalStorage(LIST_COIN, this.listCoin, this.id ?? 0);
     this.saveToLocalStorage(HISTORY_LIST, this.historyList, this.id ?? 0);
