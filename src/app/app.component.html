@@ -1,6 +1,6 @@
 <div class="container">
   <div class="list-app">
-    <app-random
+    <app-randoms
       [id]="app.id"
       *ngFor="let app of apps; index as idx"
       [readonly]="true"
@@ -9,7 +9,7 @@
       [ngClass]="{
         selected: app.id === selectedId
       }"
-    ></app-random>
+    ></app-randoms>
   </div>
   <div class="content-app">
     <ng-container

@@ -1,0 +1,24 @@
+
+<nz-tabset>
+    <nz-tab [nzTitle]="titleTemplate" *ngFor="let tab of tabs;index as idx">
+      <ng-template #titleTemplate>
+        <fa-icon [icon]="tab.icon"></fa-icon>
+        {{ tabs[idx].title }}
+      </ng-template>
+      <ng-container [ngTemplateOutlet]="getReadonlyContainer(idx)"></ng-container>
+      <app-random [id]="id" [randomType]="tab.type" #random></app-random>
+    </nz-tab>
+</nz-tabset>
+
+<ng-template #container>
+  <nz-tabset>
+    <nz-tab [nzTitle]="titleTemplate" *ngFor="let tab of tabs;index as idx">
+      <ng-template #titleTemplate>
+        <fa-icon [icon]="tab.icon"></fa-icon>
+        {{ tabs[idx].title }}
+      </ng-template>
+      <ng-container [ngTemplateOutlet]="getContainer(idx)"></ng-container>
+    </nz-tab>
+</nz-tabset>
+</ng-template>
+

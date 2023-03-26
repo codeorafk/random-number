@@ -4,7 +4,7 @@ import {
   QueryList,
   ViewChildren,
 } from '@angular/core';
-import { RandomComponent } from './random/random.component';
+import { RandomsComponent } from './randoms/randoms.component';
 interface AppType {
   id: number;
 }
@@ -14,7 +14,7 @@ interface AppType {
   styleUrls: ['./app.component.less'],
 })
 export class AppComponent {
-  @ViewChildren(RandomComponent) componentList!: QueryList<RandomComponent>;
+  @ViewChildren(RandomsComponent) componentList!: QueryList<RandomsComponent>;
   @HostListener('window:beforeunload')
   destroyAll() {
     this.componentList.forEach((component) => component.ngOnDestroy());
@@ -22,9 +22,8 @@ export class AppComponent {
 
   get selectedApp() {
     const component = this.componentList?.get(this.selectedId) as
-      | RandomComponent
+      | RandomsComponent
       | undefined;
-    console.log(component);
     return component ?? undefined;
   }
   selectedId = 0;

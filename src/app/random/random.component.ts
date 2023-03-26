@@ -6,6 +6,7 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
+import * as _ from 'lodash';
 import { BehaviorSubject, combineLatest, delay, tap } from 'rxjs';
 
 const HISTORY_LIST = 'historyList';
@@ -13,6 +14,11 @@ const LIST_COIN = 'listCoin';
 const N_COIN = 'n_coin';
 const VALUE0 = 'value0';
 const VALUE1 = 'value1';
+const FROM = 'from';
+const TO = 'to';
+const N_NUMBER = 'n-number';
+
+export type RandomType = 'binary' | 'decimal'
 @Component({
   selector: 'app-random',
   templateUrl: './random.component.html',
@@ -20,11 +26,18 @@ const VALUE1 = 'value1';
 })
 export class RandomComponent implements OnDestroy, OnInit {
   @ViewChild('container') container!: TemplateRef<unknown>;
+  @ViewChild('readonlyContainer') readonlyContainer!: TemplateRef<unknown>
   @Input() id?: number;
-  @Input() from = 0;
-  @Input() to = 1;
+  // @Input() from = 0;
+  // @Input() to = 1;
   @Input() timeout = 0.1;
-  @Input() readonly = false;
+  @Input() randomType: RandomType = 'binary'
+
+  randomFrom$ = new BehaviorSubject<number>(0);
+  randomTo$ = new BehaviorSubject<number>(1);
+  n_number = 1;
+  n_number_temp = 1;
+
   value0 = false;
   value1 = false;
   n_coin = 0;
@@ -41,47 +54,69 @@ export class RandomComponent implements OnDestroy, OnInit {
   constructor() {}
 
   ngOnInit(): void {
-    this.listCoin = this.getFromLocalStorage(LIST_COIN, this.id ?? 0) ?? [];
+    this.listCoin = this.getFromLocalStorage(LIST_COIN, this.id ?? 0, this.randomType) ?? [];
     this.historyList =
-      this.getFromLocalStorage(HISTORY_LIST, this.id ?? 0) ?? [];
-    this.n_coin = this.getFromLocalStorage(N_COIN, this.id ?? 0) ?? 0;
-    this.value0 = this.getFromLocalStorage(VALUE0, this.id ?? 0) ?? false;
-    this.value1 = this.getFromLocalStorage(VALUE1, this.id ?? 0) ?? false;
+      this.getFromLocalStorage(HISTORY_LIST, this.id ?? 0, this.randomType) ?? [];
+    this.n_coin = this.getFromLocalStorage(N_COIN, this.id ?? 0, this.randomType) ?? 0;
 
+    this.value0 = this.getFromLocalStorage(VALUE0, this.id ?? 0, this.randomType) ?? false;
+    this.value1 = this.getFromLocalStorage(VALUE1, this.id ?? 0, this.randomType) ?? false;
     const values = this.values$.value;
     if (this.value0) values.push(0);
     if (this.value1) values.push(1);
-
     this.values$.next(values);
     this.n_coin$.next(this.n_coin ?? 0);
 
-    this.randomList(this.from, this.to, this.timeout).subscribe();
+    const from = this.getFromLocalStorage(FROM, this.id ?? 0, this.randomType);
+    const to = this.getFromLocalStorage(TO, this.id ?? 0, this.randomType)
+    if(from && _.isNumber(+from)) this.randomFrom$.next(from);
+    if(to && _.isNumber(+to)) this.randomTo$.next(to);
+
+    const n_number = this.getFromLocalStorage(N_NUMBER, this.id ?? 0, this.randomType)
+    if(n_number && _.isNumber(+n_number)) {this.n_number = n_number; this.n_number_temp = n_number}
+
+    this.randomList(this.timeout).subscribe();
   }
   ngOnDestroy(): void {
-    this.saveToLocalStorage(LIST_COIN, this.listCoin, this.id ?? 0);
-    this.saveToLocalStorage(HISTORY_LIST, this.historyList, this.id ?? 0);
-    this.saveToLocalStorage(N_COIN, this.n_coin, this.id ?? 0);
-    this.saveToLocalStorage(VALUE0, this.value0, this.id ?? 0);
-    this.saveToLocalStorage(VALUE1, this.value1, this.id ?? 0);
+    this.saveToLocalStorage(LIST_COIN, this.listCoin, this.id ?? 0, this.randomType);
+    this.saveToLocalStorage(HISTORY_LIST, this.historyList, this.id ?? 0, this.randomType);
+    this.saveToLocalStorage(N_COIN, this.n_coin, this.id ?? 0, this.randomType);
+    this.saveToLocalStorage(VALUE0, this.value0, this.id ?? 0, this.randomType);
+    this.saveToLocalStorage(VALUE1, this.value1, this.id ?? 0, this.randomType);
+    this.saveToLocalStorage(FROM, this.randomFrom$.value, this.id ?? 0, this.randomType);
+    this.saveToLocalStorage(TO, this.randomTo$.value, this.id ?? 0, this.randomType)
+    this.saveToLocalStorage(N_NUMBER, this.n_number, this.id ?? 0, this.randomType)
   }
-  randomOne(n: number, from: number, to: number) {
+  randomOne(n: number, from: number | undefined, to: number | undefined) {
+    if(from === undefined || to === undefined) return [];
     return new Array(n)
       .fill(0)
       .map((_) => Math.floor(Math.random() * (to + 1 - from)) + from);
   }
-  randomList(from: number, to: number, timeout: number) {
+  randomList( timeout: number) {
     return combineLatest({
       loop: this.loop$,
       test: this.isStart$,
       n: this.n_coin$,
       values: this.values$,
+      randomFrom: this.randomFrom$,
+      randomTo: this.randomTo$
     }).pipe(
       delay(timeout * 1000),
-      tap(({ test, n, values, loop }) => {
+      tap(({ test, n, values, loop,randomFrom, randomTo }) => {
         if (loop && test) {
-          const e = this.randomOne(n, from, to);
-          const endCond = this.endCondition(e, values);
+          const e = this.randomOne(n, randomFrom, randomTo);
+          const endCond = this.endCondition(e, values, this.n_number_temp > 0? this.n_number_temp : this.n_number);
           if (this.isStart$.value) {
+            switch(this.randomType) {
+              case 'binary':
+                this.n_number = this.n_number_temp > 0? this.n_number_temp : this.n_number
+                break;
+              case 'decimal':
+                this.n_number = Math.max(Math.log10(randomFrom), Math.log10(randomTo)) + 1;
+                break;
+            }
+
             this.listCoin = e;
             this.historyList.unshift(e);
             if (this.historyList.length > 50) {
@@ -99,9 +134,17 @@ export class RandomComponent implements OnDestroy, OnInit {
     );
   }
 
-  endCondition(listCoin: number[], values: number[]) {
-    if (!values.length) return true;
-    return values.some((value) => listCoin.every((coin) => coin === value));
+  endCondition(listCoin: number[], values: number[], n_number: number) {
+    switch(this.randomType) {
+      case 'binary' :
+        if (!values.length) return true;
+        return values.some((value) => listCoin.every((coin) => this.binaryCheck(coin, value, n_number)));
+      case 'decimal':
+        if(!listCoin.length) return true;
+        const firstValue = listCoin[0];
+        return listCoin.every(coin => coin === firstValue)
+    }
+
   }
 
   n_coinChange() {
@@ -121,7 +164,6 @@ export class RandomComponent implements OnDestroy, OnInit {
   }
 
   setValue(n: number) {
-    console.log('aaa');
     const values = this.values$.value;
     const idx = values.findIndex((value) => n === value);
     if (idx === -1) {
@@ -129,17 +171,41 @@ export class RandomComponent implements OnDestroy, OnInit {
     } else {
       values.splice(idx, 1);
     }
-    console.log(values);
     this.values$.next(values);
-    console.log(this.values$.value);
   }
 
-  saveToLocalStorage(field: string, value: any, id: number) {
-    localStorage.setItem(field + id.toString(), JSON.stringify(value));
+  saveToLocalStorage(field: string, value: any, id: number,type: RandomType) {
+    localStorage.setItem([field, id.toString(), type].join('_'), JSON.stringify(value));
   }
 
-  getFromLocalStorage(field: string, id: number) {
-    const valueTemp = localStorage.getItem(field + id.toString());
+  getFromLocalStorage(field: string, id: number, type: RandomType) {
+    const valueTemp = localStorage.getItem([field, id.toString(), type].join('_'));
     return valueTemp ? JSON.parse(valueTemp) : undefined;
+  }
+
+  randomFromChange(value: number) {
+    this.randomFrom$.next(value);
+  }
+
+  randomToChange(value: number) {
+    this.randomTo$.next(value);
+
+  }
+
+  binToDec(bin: number) {
+    if(this.randomType === 'binary')
+      return bin.toString(2).padStart(this.n_number, '0');
+    return bin;
+  }
+  numberOfCoin(value: number) {
+    if(value < 1) return;
+    const to = Math.pow(2, value) - 1
+    this.randomTo$.next(to);
+  }
+
+  binaryCheck(coin: number, value: number, n_number: number) {
+    if(value === 0) return coin === 0;
+    if(value === 1) return coin === (Math.pow(2, n_number) - 1)
+    return true;
   }
 }

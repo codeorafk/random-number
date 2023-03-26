@@ -1,111 +1,173 @@
-<div class="section">
-  <div class="title bg-slate-50">Nhập số coin</div>
-  <div class="input">
-    <input
-      type="number"
-      [(ngModel)]="n_coin"
-      (ngModelChange)="n_coinChange()"
-      [readOnly]="readonly"
-    />
-  </div>
-</div>
-<div class="list-item">
-  <div class="item">
-    <span> 0</span>
-    <nz-switch
-      [(ngModel)]="value0"
-      (ngModelChange)="setValue(0)"
-      [nzDisabled]="readonly"
-    ></nz-switch>
-  </div>
-  <div class="item">
-    <span> 1</span>
-    <nz-switch
-      [(ngModel)]="value1"
-      (ngModelChange)="setValue(1)"
-      [nzDisabled]="readonly"
-    ></nz-switch>
-  </div>
-</div>
-<div class="flex justify-center">
-  <button
-    class="btn-primary btn"
-    [ngClass]="{ disabled: readonly }"
-    (click)="start()"
-    *ngIf="!isStart$.value; else endBtn"
-  >
-    Lập lịch
-  </button>
-  <ng-template #endBtn>
-    <button
-      class="btn-primary btn"
-      (click)="end()"
-      [ngClass]="{ disabled: readonly }"
-    >
-      kết thúc
-    </button>
-  </ng-template>
-</div>
-<div class="list-coin">
-  <div class="coin" *ngFor="let coin of listCoin">
-    <span> {{ coin }}</span>
-  </div>
-</div>
-
-<div class="list-history" *ngIf="!readonly">
-  <div class="title">Lịch sử coin</div>
-  <div class="content">
-    <div class="list-coin-history" *ngFor="let list of historyList">
-      <span class="coin-history" *ngFor="let coin of list">{{ coin }}</span>
+<ng-template #readonlyContainer>
+  <div class="random-content">
+    <div class="section" *ngIf="randomType === 'decimal'">
+      <div class="title bg-slate-50">Nhập khoảng random</div>
+      <div class="input split-2">
+        <input
+          type="number"
+          pattern="\d*"
+          [ngModel]="randomFrom$ | async"
+          [readOnly]="true"
+          (ngModelChange)="randomFromChange($event)"
+        />
+        <div class="line-vertical"></div>
+        <input
+          type="number"
+          pattern="\d*"
+          [ngModel]="randomTo$ | async"
+          [readOnly]="true"
+          (ngModelChange)="randomToChange($event)"
+        />
+      </div>
+    </div>
+    <div class="section" *ngIf="randomType === 'binary'">
+      <div class="title bg-slate-50">Nhập số chữ số coin</div>
+      <div class="input">
+        <input
+          type="number"
+          [(ngModel)]="n_number_temp"
+          (ngModelChange)="numberOfCoin($event)"
+          [readOnly]="true"
+        />
+      </div>
+    </div>
+    <div class="section">
+      <div class="title bg-slate-50">Nhập số coin</div>
+      <div class="input">
+        <input
+          type="number"
+          [(ngModel)]="n_coin"
+          (ngModelChange)="n_coinChange()"
+          [readOnly]="true"
+        />
+      </div>
+    </div>
+    <div class="list-item" *ngIf="randomType === 'binary'">
+      <div class="item">
+        <span> 0</span>
+        <nz-switch
+          [(ngModel)]="value0"
+          (ngModelChange)="setValue(0)"
+          [nzDisabled]="true"
+        ></nz-switch>
+      </div>
+      <div class="item">
+        <span> 1</span>
+        <nz-switch
+          [(ngModel)]="value1"
+          (ngModelChange)="setValue(1)"
+          [nzDisabled]="true"
+        ></nz-switch>
+      </div>
+    </div>
+    <div class="flex justify-center">
+      <button
+        class="btn-primary btn"
+        [ngClass]="{ disabled: true }"
+        (click)="start()"
+        *ngIf="!isStart$.value; else endBtn"
+      >
+        Lập lịch
+      </button>
+      <ng-template #endBtn>
+        <button
+          class="btn-primary btn"
+          (click)="end()"
+          [ngClass]="{ disabled: true }"
+        >
+          kết thúc
+        </button>
+      </ng-template>
+    </div>
+    <div class="list-coin" [style]="'--n-number: ' + n_number">
+      <div class="coin" *ngFor="let coin of listCoin">
+        <span> {{ binToDec(coin) }}</span>
+      </div>
     </div>
   </div>
-</div>
-
+</ng-template>
 <ng-template #container>
-  <div class="section">
-    <div class="title bg-slate-50">Nhập số coin</div>
-    <div class="input">
-      <input
-        type="number"
-        pattern="\d*"
-        [(ngModel)]="n_coin"
-        (ngModelChange)="n_coinChange()"
-      />
+  <div class="random-content">
+    <div class="section" *ngIf="randomType === 'decimal'">
+      <div class="title bg-slate-50">Nhập khoảng random</div>
+      <div class="input split-2">
+        <input
+          type="number"
+          pattern="\d*"
+          [ngModel]="randomFrom$ | async"
+          (ngModelChange)="randomFromChange($event)"
+        />
+        <div class="line-vertical"></div>
+        <input
+          type="number"
+          pattern="\d*"
+          [ngModel]="randomTo$ | async"
+          (ngModelChange)="randomToChange($event)"
+        />
+      </div>
     </div>
-  </div>
-  <div class="list-item">
-    <div class="item">
-      <span> 0</span>
-      <nz-switch [(ngModel)]="value0" (ngModelChange)="setValue(0)"></nz-switch>
+    <div class="section" *ngIf="randomType === 'binary'">
+      <div class="title bg-slate-50">Nhập số chữ số coin</div>
+      <div class="input">
+        <input
+          type="number"
+          [(ngModel)]="n_number_temp"
+          min="1"
+          (ngModelChange)="numberOfCoin($event)"
+        />
+      </div>
     </div>
-    <div class="item">
-      <span> 1</span>
-      <nz-switch [(ngModel)]="value1" (ngModelChange)="setValue(1)"></nz-switch>
+    <div class="section">
+      <div class="title bg-slate-50">Nhập số coin</div>
+      <div class="input">
+        <input
+          type="number"
+          pattern="\d*"
+          [(ngModel)]="n_coin"
+          (ngModelChange)="n_coinChange()"
+        />
+      </div>
     </div>
-  </div>
-  <div class="flex justify-center">
-    <button
-      class="btn-primary btn"
-      (click)="start()"
-      *ngIf="!isStart$.value; else endBtn"
-    >
-      Lập lịch
-    </button>
-    <ng-template #endBtn>
-      <button class="btn-primary btn" (click)="end()">kết thúc</button>
-    </ng-template>
-  </div>
-  <div class="list-coin">
-    <div class="coin" *ngFor="let coin of listCoin">
-      <span> {{ coin }}</span>
+    <div class="list-item" *ngIf="randomType === 'binary'">
+      <div class="item">
+        <span> 0</span>
+        <nz-switch
+          [(ngModel)]="value0"
+          (ngModelChange)="setValue(0)"
+        ></nz-switch>
+      </div>
+      <div class="item">
+        <span> 1</span>
+        <nz-switch
+          [(ngModel)]="value1"
+          (ngModelChange)="setValue(1)"
+        ></nz-switch>
+      </div>
     </div>
-  </div>
+    <div class="flex justify-center">
+      <button
+        class="btn-primary btn"
+        (click)="start()"
+        *ngIf="!isStart$.value; else endBtn"
+      >
+        Lập lịch
+      </button>
+      <ng-template #endBtn>
+        <button class="btn-primary btn" (click)="end()">kết thúc</button>
+      </ng-template>
+    </div>
+    <div class="list-coin" [style]="'--n-number: ' + n_number">
+      <div class="coin" *ngFor="let coin of listCoin">
+        <span> {{ binToDec(coin) }}</span>
+      </div>
+    </div>
 
-  <div class="list-history">
-    <div class="title">Lịch sử coin</div>
-    <div class="content">
-      <div class="list-coin-history" *ngFor="let list of historyList">
-        <span class="coin-history" *ngFor="let coin of list">{{ coin }}</span>
+    <div class="list-history">
+      <div class="title">Lịch sử coin</div>
+      <div class="content">
+        <div class="list-coin-history" *ngFor="let list of historyList">
+          <span class="coin-history" *ngFor="let coin of list">{{ binToDec(coin) }}</span>
+        </div>
       </div>
     </div>
   </div>
