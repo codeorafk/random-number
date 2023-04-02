@@ -1,6 +1,12 @@
-import { Component, Input, OnDestroy, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, Output, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
 import { IconDefinition, faCoins, faSterlingSign } from '@fortawesome/free-solid-svg-icons';
 import { RandomComponent, RandomType } from '../random/random.component';
+export interface EndRandResult {
+  result: number[],
+  n_number: number,
+  type: RandomType,
+  id?: number
+}
 @Component({
   selector: 'app-randoms',
   templateUrl: './randoms.component.html',
@@ -11,6 +17,8 @@ export class RandomsComponent implements OnDestroy {
   @ViewChildren(RandomComponent)  componentList!: QueryList<RandomComponent>;
   @Input() id?: number;
   @Input() readonly = false;
+  @Input() idx? = 0
+  @Output() endRandom = new EventEmitter<EndRandResult>()
   tabs: {title:string, icon: IconDefinition, type: RandomType}[] = [
     {
       title: 'binary',
@@ -42,5 +50,16 @@ export class RandomsComponent implements OnDestroy {
     if(!component) return null;
     component.id = this.id;
     return component.readonlyContainer;
+  }
+
+  onEndRandom(e: any, type: RandomType, id: number | undefined) {
+    this.endRandom.emit(
+      {
+        result: e.result,
+        n_number: e.n_number,
+        type: type,
+        id: id
+      }
+    )
   }
 }

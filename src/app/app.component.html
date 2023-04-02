@@ -1,15 +1,21 @@
 <div class="container">
   <div class="list-app">
-    <app-randoms
-      [id]="app.id"
+    <div
       *ngFor="let app of apps; index as idx"
-      [readonly]="true"
+      [id]="'app-random_' + app.id.toString()"
       class="app-content"
-      (click)="selectedId = idx"
       [ngClass]="{
-        selected: app.id === selectedId
+        selected: app.id === selectedApp?.id
       }"
-    ></app-randoms>
+    >
+      <app-randoms
+        [id]="app.id"
+        [readonly]="true"
+        (click)="onClickApp(idx)"
+        (endRandom)="notificate($event, appRandom)"
+        #appRandom
+      ></app-randoms>
+    </div>
   </div>
   <div class="content-app">
     <ng-container

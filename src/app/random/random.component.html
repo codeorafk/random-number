@@ -81,7 +81,7 @@
     </div>
     <div class="list-coin" [style]="'--n-number: ' + n_number">
       <div class="coin" *ngFor="let coin of listCoin">
-        <span> {{ binToDec(coin) }}</span>
+        <span> {{ binToDec(coin, n_number,randomType) }}</span>
       </div>
     </div>
   </div>
@@ -158,7 +158,7 @@
     </div>
     <div class="list-coin" [style]="'--n-number: ' + n_number">
       <div class="coin" *ngFor="let coin of listCoin">
-        <span> {{ binToDec(coin) }}</span>
+        <span> {{ binToDec(coin,n_number,randomType) }}</span>
       </div>
     </div>
 
@@ -166,7 +166,7 @@
       <div class="title">Lịch sử coin</div>
       <div class="content">
         <div class="list-coin-history" *ngFor="let list of historyList">
-          <span class="coin-history" *ngFor="let coin of list">{{ binToDec(coin) }}</span>
+          <span class="coin-history" *ngFor="let coin of list">{{ binToDec(coin, n_number, randomType) }}</span>
         </div>
       </div>
     </div>

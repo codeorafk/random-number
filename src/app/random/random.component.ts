@@ -1,8 +1,10 @@
 import {
   Component,
+  EventEmitter,
   Input,
   OnDestroy,
   OnInit,
+  Output,
   TemplateRef,
   ViewChild,
 } from '@angular/core';
@@ -17,7 +19,11 @@ const VALUE1 = 'value1';
 const FROM = 'from';
 const TO = 'to';
 const N_NUMBER = 'n-number';
-
+export const binToDec = (bin: number, n_number:number, randomType: RandomType) => {
+  if(randomType === 'binary')
+    return bin.toString(2).padStart(n_number, '0');
+  return bin;
+}
 export type RandomType = 'binary' | 'decimal'
 @Component({
   selector: 'app-random',
@@ -32,6 +38,7 @@ export class RandomComponent implements OnDestroy, OnInit {
   // @Input() to = 1;
   @Input() timeout = 0.1;
   @Input() randomType: RandomType = 'binary'
+  @Output() endRandom = new EventEmitter()
 
   randomFrom$ = new BehaviorSubject<number>(0);
   randomTo$ = new BehaviorSubject<number>(1);
@@ -51,7 +58,7 @@ export class RandomComponent implements OnDestroy, OnInit {
   isStart$ = new BehaviorSubject<boolean>(false);
   loop$ = new BehaviorSubject<boolean>(false);
 
-  constructor() {}
+
 
   ngOnInit(): void {
     this.listCoin = this.getFromLocalStorage(LIST_COIN, this.id ?? 0, this.randomType) ?? [];
@@ -124,6 +131,10 @@ export class RandomComponent implements OnDestroy, OnInit {
             }
           }
           if (endCond) {
+            this.endRandom.emit({
+              result: e,
+              n_number: this.n_number
+            })
             this.isStart$.next(false);
             this.loop$.next(false);
           } else {
@@ -192,11 +203,7 @@ export class RandomComponent implements OnDestroy, OnInit {
 
   }
 
-  binToDec(bin: number) {
-    if(this.randomType === 'binary')
-      return bin.toString(2).padStart(this.n_number, '0');
-    return bin;
-  }
+
   numberOfCoin(value: number) {
     if(value < 1) return;
     const to = Math.pow(2, value) - 1
@@ -208,4 +215,6 @@ export class RandomComponent implements OnDestroy, OnInit {
     if(value === 1) return coin === (Math.pow(2, n_number) - 1)
     return true;
   }
+
+  binToDec = binToDec
 }
