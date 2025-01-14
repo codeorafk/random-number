@@ -138,6 +138,9 @@ export class RandomComponent implements OnDestroy, OnInit {
       .fill(0)
       .map((_) => Math.floor(Math.random() * (to + 1 - from)) + from);
   }
+  n_time = 0;
+  Stime = 0;
+  Etime = 0;
   randomList(timeout: number) {
     return combineLatest({
       loop: this.loop$,
@@ -169,6 +172,8 @@ export class RandomComponent implements OnDestroy, OnInit {
             }
 
             this.listCoin = e;
+            this.n_time++;
+            this.Etime = new Date().getTime();
             this.historyList.unshift(e);
             if (this.historyList.length > 50) {
               this.historyList.splice(50, 1);
@@ -208,6 +213,8 @@ export class RandomComponent implements OnDestroy, OnInit {
   }
 
   start() {
+    this.n_time = 0;
+    this.Stime = new Date().getTime();
     if (!this.n_coin) {
       this.n_coinValidate = true;
     }
@@ -216,6 +223,7 @@ export class RandomComponent implements OnDestroy, OnInit {
   }
 
   end() {
+    this.Etime = new Date().getTime();
     this.isStart$.next(false);
   }
 
