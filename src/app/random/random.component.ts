@@ -25,8 +25,9 @@ export const binToDec = (
   randomType: RandomType
 ) => {
   if (randomType === 'binary') return bin.toString(2).padStart(n_number, '0');
-  return bin;
+  return bin.toString(10).padStart(n_number, '0');
 };
+
 export type RandomType = 'binary' | 'decimal';
 @Component({
   selector: 'app-random',
@@ -255,7 +256,6 @@ export class RandomComponent implements OnDestroy, OnInit {
   randomFromChange(value: number) {
     this.randomFrom$.next(value);
   }
-
   randomToChange(value: number) {
     this.randomTo$.next(value);
   }
