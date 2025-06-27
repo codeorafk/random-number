@@ -142,6 +142,7 @@ export class RandomComponent implements OnDestroy, OnInit {
       .map((_) => Math.floor(Math.random() * (to + 1 - from)) + from);
   }
   n_time = 0;
+  n_timeMax$ = new BehaviorSubject<number>(0);
   Stime = 0;
   Etime = 0;
   randomList(timeout: number) {
@@ -152,48 +153,65 @@ export class RandomComponent implements OnDestroy, OnInit {
       values: this.values$,
       randomFrom: this.randomFrom$,
       randomTo: this.randomTo$,
+      n_timeMax: this.n_timeMax$,
+      isStart: this.isStart$,
     }).pipe(
       delay(timeout * 1000),
-      tap(({ test, n, values, loop, randomFrom, randomTo }) => {
-        if (loop && test) {
-          const e = this.randomOne(n, randomFrom, randomTo);
-          const endCond = this.endCondition(
-            e,
-            values,
-            this.n_number_temp > 0 ? this.n_number_temp : this.n_number
-          );
-          if (this.isStart$.value) {
-            switch (this.randomType) {
-              case 'binary':
-                this.n_number =
-                  this.n_number_temp > 0 ? this.n_number_temp : this.n_number;
-                break;
-              case 'decimal':
-                this.n_number =
-                  Math.max(Math.log10(randomFrom), Math.log10(randomTo)) + 1;
-                break;
+      tap(
+        ({
+          test,
+          n,
+          values,
+          loop,
+          randomFrom,
+          randomTo,
+          n_timeMax,
+          isStart,
+        }) => {
+          if (loop && test) {
+            const e = this.randomOne(n, randomFrom, randomTo);
+            const endCond =
+              this.endCondition(
+                e,
+                values,
+                this.n_number_temp > 0 ? this.n_number_temp : this.n_number
+              ) ||
+              (n_timeMax > 0 && n_timeMax <= this.n_time);
+            if (endCond) {
+              this.endRandom.emit({
+                result: e,
+                n_number: this.n_number,
+              });
+              this.isStart$.next(false);
+              this.loop$.next(false);
             }
+            if (isStart) {
+              switch (this.randomType) {
+                case 'binary':
+                  this.n_number =
+                    this.n_number_temp > 0 ? this.n_number_temp : this.n_number;
+                  break;
+                case 'decimal':
+                  this.n_number =
+                    Math.max(Math.log10(randomFrom), Math.log10(randomTo)) + 1;
+                  break;
+              }
 
-            this.listCoin = e;
-            this.n_time++;
-            this.Etime = new Date().getTime();
-            this.historyList.unshift(e);
-            if (this.historyList.length > 50) {
-              this.historyList.splice(50, 1);
+              this.listCoin = e;
+
+              this.historyList.unshift(e);
+              if (this.historyList.length > 50) {
+                this.historyList.splice(50, 1);
+              }
             }
-          }
-          if (endCond) {
-            this.endRandom.emit({
-              result: e,
-              n_number: this.n_number,
-            });
-            this.isStart$.next(false);
-            this.loop$.next(false);
-          } else {
-            this.loop$.next(true);
+            if (!endCond) {
+              this.n_time++;
+              this.Etime = new Date().getTime();
+              this.loop$.next(true);
+            }
           }
         }
-      })
+      )
     );
   }
 
@@ -213,6 +231,10 @@ export class RandomComponent implements OnDestroy, OnInit {
 
   n_coinChange() {
     this.n_coin$.next(this.n_coin ?? 0);
+  }
+
+  n_timeMaxChange(value: number) {
+    this.n_timeMax$.next(value);
   }
 
   start() {

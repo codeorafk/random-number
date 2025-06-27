@@ -33,12 +33,20 @@
     </div>
     <div class="section">
       <div class="title bg-slate-50">Nhập số coin</div>
-      <div class="input">
+      <div class="input split-2">
         <input
           type="number"
           [(ngModel)]="n_coin"
           (ngModelChange)="n_coinChange()"
           [readOnly]="true"
+        />
+        <div class="line-vertical"></div>
+        <input
+          type="number"
+          pattern="\d*"
+          [ngModel]="randomTo$ | async"
+          [readOnly]="true"
+          (ngModelChange)="randomToChange($event)"
         />
       </div>
     </div>
@@ -119,12 +127,19 @@
     </div>
     <div class="section">
       <div class="title bg-slate-50">Nhập số coin</div>
-      <div class="input">
+      <div class="input split-2">
         <input
           type="number"
           pattern="\d*"
           [(ngModel)]="n_coin"
           (ngModelChange)="n_coinChange()"
+        />
+        <div class="line-vertical"></div>
+        <input
+          type="number"
+          pattern="\d*"
+          [ngModel]="n_timeMax$ | async"
+          (ngModelChange)="n_timeMaxChange($event)"
         />
       </div>
     </div>
