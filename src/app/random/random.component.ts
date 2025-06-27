@@ -8,6 +8,7 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
+import { faCopy } from '@fortawesome/free-solid-svg-icons';
 import * as _ from 'lodash';
 import { BehaviorSubject, combineLatest, delay, tap } from 'rxjs';
 
@@ -35,6 +36,7 @@ export type RandomType = 'binary' | 'decimal';
   styleUrls: ['./random.component.less'],
 })
 export class RandomComponent implements OnDestroy, OnInit {
+  faCopy = faCopy;
   @ViewChild('container') container!: TemplateRef<unknown>;
   @ViewChild('readonlyContainer') readonlyContainer!: TemplateRef<unknown>;
   @Input() id?: number;
@@ -273,4 +275,15 @@ export class RandomComponent implements OnDestroy, OnInit {
   }
 
   binToDec = binToDec;
+  copyToClipboard(list: number[]) {
+    const value = list
+      .map((coin) => this.binToDec(coin, this.n_number, this.randomType))
+      .join(' ');
+    document.addEventListener('copy', (e: ClipboardEvent) => {
+      e.clipboardData?.setData('text/plain', value);
+      e.preventDefault();
+      document.removeEventListener('copy', () => {});
+    });
+    document.execCommand('copy');
+  }
 }

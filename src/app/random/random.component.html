@@ -167,10 +167,15 @@
       <div class="content">
         <div>{{ n_time }} lần lập lịch</div>
         <div>{{ (Etime - Stime) / 1000 }}s</div>
-        <div class="list-coin-history" *ngFor="let list of historyList">
-          <span class="coin-history" *ngFor="let coin of list">
-            {{ binToDec(coin, n_number, randomType) }}</span
-          >
+        <div *ngFor="let list of historyList; index as i" class="abc">
+          <div class="list-coin-history">
+            <span class="coin-history" *ngFor="let coin of list">
+              {{ binToDec(coin, n_number, randomType) }}
+            </span>
+          </div>
+          <button class="btn-primary btn" (click)="copyToClipboard(list)">
+            <fa-icon [icon]="faCopy"></fa-icon>
+          </button>
         </div>
       </div>
     </div>
